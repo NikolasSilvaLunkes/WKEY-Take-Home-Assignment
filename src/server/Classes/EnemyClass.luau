@@ -34,10 +34,14 @@ function Enemy:GetNearestPlayerInArea()
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
-		if not root then continue end
+		if not root then
+			continue
+		end
 
 		local localPos = spawnArea.CFrame:PointToObjectSpace(root.Position)
-		if math.abs(localPos.X) > halfSize.X or math.abs(localPos.Z) > halfSize.Z then continue end
+		if math.abs(localPos.X) > halfSize.X or math.abs(localPos.Z) > halfSize.Z then
+			continue
+		end
 
 		local dist = (root.Position - self.Model:GetPivot().Position).Magnitude
 		if dist < nearestDist then
@@ -51,7 +55,9 @@ end
 function Enemy:Attack(target)
 	local character = target.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then return end
+	if not humanoid then
+		return
+	end
 	humanoid:TakeDamage(10)
 end
 
@@ -65,7 +71,7 @@ function Enemy:StartBehaviorLoop()
 	local lastAttack = 0
 
 	task.spawn(function()
-		while self.Model and self.Model.Parent and humanoid.Health > 0 do
+		while self.Model and self.Model.Parent and humanoid and humanoid.Health > 0 do
 			local target, dist = self:GetNearestPlayerInArea()
 
 			if target then
@@ -82,7 +88,16 @@ function Enemy:StartBehaviorLoop()
 
 			task.wait(BEHAVIOR_TICK)
 		end
+		if humanoid and humanoid.Health > 0 then
+			task.wait(1)
+			self.Model:Destroy()
+		end
+		Knit.GetService("EnemyService"):UnregisterEnemy(self)
 	end)
+end
+
+function Enemy:Kill()
+	Enemy.Health = 0
 end
 
 -- gets a position inside a spawn area
