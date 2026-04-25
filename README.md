@@ -23,3 +23,8 @@ USED LIBRARIES:
 
 Knit;
 Vide
+
+How it was made:
+
+Used a simple config (spawnAreasConfigs.luau), could be a more complex registry but since its a simple test assignment i made it simple,
+made classes for spawn areas and enemies, so its more readable and manageable in the future, used services for better control over the classes.

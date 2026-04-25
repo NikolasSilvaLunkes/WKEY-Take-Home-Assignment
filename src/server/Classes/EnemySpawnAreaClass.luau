@@ -83,9 +83,9 @@ function EnemySpawnArea:SpawnRandomEnemy(config)
 		return
 	end
 
-	local Enemy = EnemyClass.new({
+	EnemyClass.new({
 		EnemyType = enemyName,
-		CFrame = CFrame.new(position),
+		Position = position,
 		SpawnArea = self,
 	})
 	self._enemyCount += 1
