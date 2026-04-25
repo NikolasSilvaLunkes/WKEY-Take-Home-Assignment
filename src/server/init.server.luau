@@ -8,10 +8,11 @@ local Knit = require(Packages.knit)
 local RequiredWorkspaceFolders = {
 	["Ignore"] = {
 		"Entities",
+		"SpawnAreas",
 	},
 }
 
-local RequiredAssets = { -- inside replicatedStorage.Assets
+local RequiredAssets = {
 	["Enemies"] = {
 		"Zombie",
 	},
@@ -44,7 +45,26 @@ local function createFolders(parent, structure)
 	end
 end
 
+local function createZombieSpawnArea()
+	local spawnAreas = workspace.Ignore:WaitForChild("SpawnAreas")
+	if spawnAreas:FindFirstChild("Zombie") then
+		return
+	end
+
+	local part = Instance.new("Part")
+	part.Name = "Zombie"
+	part.Size = Vector3.new(50, 50, 50)
+	part.CFrame = CFrame.new(2.775, 13.075, 31.475)
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanTouch = false
+	part.CanQuery = false
+	part.Transparency = 0.9
+	part.Parent = spawnAreas
+end
+
 createFolders(workspace, RequiredWorkspaceFolders)
+createZombieSpawnArea()
 checkAssets(ReplicatedStorage:WaitForChild("Assets"), RequiredAssets)
 
 Knit.AddServicesDeep(Services)
