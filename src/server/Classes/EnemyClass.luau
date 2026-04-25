@@ -8,6 +8,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Dependencies
+local EnemiesAssets: Folder = ReplicatedStorage.Assets.Enemies
 
 -- Definitions
 
@@ -20,19 +21,24 @@ Enemy.__index = Enemy
 
 -- gets a position inside a spawn area
 
-function Enemy:CreateEnemy() end
-
-function Enemy.new(part: BasePart)
-	if part:IsA("Part") then
-		return setmetatable({
-			Type = "rectangle",
-			Position = part.Position,
-			CFrame = part.CFrame,
-			Size = part.Size,
-		}, Enemy)
+function Enemy.new(params: { EnemyType: string, CFrame: CFrame, SpawnArea: {} })
+	local enemyType = params.EnemyType
+	if not enemyType or typeof(enemyType) ~= "string" then
+		if not enemyType then
+			warn("[EnemyClass] No enemyType defined! returning nil")
+		else
+			warn("[EnemyClass] Wrong enemyType type! should be a string, returning nil")
+		end
+		return nil
 	end
-	warn("[Class][Enemy spawn area] tried to create a spawn area without a part reference")
-	return nil
+	local enemyModel = EnemiesAssets:FindFirstChild(enemyType):Clone()
+	enemyModel:PivotTo(params.CFrame)
+	enemyModel.Parent = workspace.Ignore.Enemies
+	return setmetatable({
+		Type = enemyType,
+		Model = enemyModel,
+		SpawnArea = params.SpawnArea,
+	}, Enemy)
 end
 
 return Enemy
