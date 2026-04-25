@@ -1,10 +1,19 @@
+--[[
+-- Enemy Service
+    
+   ```
+]]
+
+-- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
+--Dependencies
 local Packages = ReplicatedStorage.Packages
-local Entities = workspace.Ignore.Entities
+local Knit = require(Packages.knit)
+local EnemySpawnAreaClass = require(ServerScriptService.Server.Classes.EnemySpawnAreaClass)
 
-local Knit = require(Packages.Knit)
-
+-- Definitions
 local EnemyService = Knit.CreateService({
 	Name = "NPCSpawnAreaService",
 	Profiles = {},
@@ -16,6 +25,10 @@ local EnemyService = Knit.CreateService({
 EnemyService.SpawnArea = {}
 EnemyService.SpawnArea.__index = EnemyService.SpawnArea
 
-function EnemyService:KnitStart() end
+function EnemyService:KnitStart()
+	for _, spawnArea: Part in workspace.Ignore.SpawnAreas:GetChildren() do
+		EnemySpawnAreaClass.new(spawnArea)
+	end
+end
 
 return EnemyService

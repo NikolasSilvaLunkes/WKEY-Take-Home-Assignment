@@ -32,8 +32,8 @@ function Enemy.new(params: { EnemyType: string, CFrame: CFrame, SpawnArea: {} })
 		return nil
 	end
 	local enemyModel = EnemiesAssets:FindFirstChild(enemyType):Clone()
-	enemyModel:PivotTo(params.CFrame)
-	enemyModel.Parent = workspace.Ignore.Enemies
+	enemyModel:PivotTo(params.CFrame + Vector3.new(0, enemyModel:GetExtentsSize().Y / 2, 0))
+	enemyModel.Parent = workspace.Ignore.Entities
 	return setmetatable({
 		Type = enemyType,
 		Model = enemyModel,

@@ -9,3 +9,5 @@ local spawnAreasConfigs = {
 		},
 	},
 }
+
+return spawnAreasConfigs
