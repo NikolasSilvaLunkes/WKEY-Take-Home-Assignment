@@ -81,7 +81,6 @@ function EnemyService:KnitStart()
 	end)
 
 	remotes.KillAll.OnServerEvent:Connect(function(_)
-		print("Kill")
 		self:KillAllEnemies()
 	end)
 end

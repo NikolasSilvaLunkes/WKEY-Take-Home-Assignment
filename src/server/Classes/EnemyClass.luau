@@ -97,7 +97,10 @@ function Enemy:StartBehaviorLoop()
 end
 
 function Enemy:Kill()
-	Enemy.Health = 0
+	self.Model.Humanoid.Health = 0
+	task.delay(1, function()
+		self.Model:Destroy()
+	end)
 end
 
 -- gets a position inside a spawn area
