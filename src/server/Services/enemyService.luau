@@ -29,7 +29,7 @@ EnemyService.SpawnArea.__index = EnemyService.SpawnArea
 function EnemyService:RegisterEnemy(enemyObject)
 	local id = HttpService:GenerateGUID(false)
 	enemyObject.Id = id
-	self.Enemies[id] = enemyObject
+	self.SpawnedEnemies[id] = enemyObject
 end
 
 function EnemyService:KnitStart()
