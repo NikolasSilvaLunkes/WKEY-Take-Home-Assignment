@@ -1,7 +1,5 @@
 --[[
 -- Enemy Service
-    
-   ```
 ]]
 
 -- Services
@@ -19,11 +17,7 @@ local spawnAreasConfigs = require(ReplicatedStorage.Shared.spawnAreasConfigs)
 local EnemyService = Knit.CreateService({
 	Name = "EnemyService",
 	Profiles = {},
-	Client = {
-		ChangeSpawnAreaInterval = Knit.CreateSignal(),
-		ChangeSpawnAreaMaxEnemies = Knit.CreateSignal(),
-		KillAll = Knit.CreateSignal(),
-	},
+	Client = {},
 	SpawnAreas = {},
 	SpawnedEnemies = {},
 })
@@ -38,6 +32,30 @@ function EnemyService:UnregisterEnemy(enemyObject)
 	self.SpawnedEnemies[enemyObject.Id] = nil
 end
 
+function EnemyService:KillAllEnemies()
+	for _, enemy in pairs(self.SpawnedEnemies) do
+		enemy:Kill()
+	end
+end
+
+function EnemyService:KnitInit()
+	local folder = Instance.new("Folder")
+	folder.Name = "EnemyRemotes"
+	folder.Parent = ReplicatedStorage
+
+	local killAll = Instance.new("RemoteEvent")
+	killAll.Name = "KillAll"
+	killAll.Parent = folder
+
+	local changeInterval = Instance.new("RemoteEvent")
+	changeInterval.Name = "ChangeSpawnAreaInterval"
+	changeInterval.Parent = folder
+
+	local changeMaxEnemies = Instance.new("RemoteEvent")
+	changeMaxEnemies.Name = "ChangeSpawnAreaMaxEnemies"
+	changeMaxEnemies.Parent = folder
+end
+
 function EnemyService:KnitStart()
 	for _, spawnAreaPart: Part in workspace.Ignore.SpawnAreas:GetChildren() do
 		local spawnArea = EnemySpawnAreaClass.new(spawnAreaPart)
@@ -46,21 +64,25 @@ function EnemyService:KnitStart()
 		self.SpawnAreas[id] = spawnArea
 	end
 
-	self.Client.ChangeSpawnAreaInterval:Connect(function(_player, configName, newInterval)
-		local config = spawnAreasConfigs[configName]
-		config.SpawnInterval = newInterval
-	end)
+	local remotes = ReplicatedStorage.EnemyRemotes
 
-	self.Client.ChangeSpawnAreaMaxEnemies:Connect(function(_player, configName, newMax)
+	remotes.ChangeSpawnAreaInterval.OnServerEvent:Connect(function(_, configName, newInterval)
 		local config = spawnAreasConfigs[configName]
-		config.MaxEnemies = newMax
-	end)
-
-	self.Client.KillAll:Connect(function(_)
-		print("Recieved")
-		for _, enemy in pairs(self.SpawnedEnemies) do
-			enemy:Kill()
+		if config then
+			config.SpawnInterval = newInterval
 		end
+	end)
+
+	remotes.ChangeSpawnAreaMaxEnemies.OnServerEvent:Connect(function(_, configName, newMax)
+		local config = spawnAreasConfigs[configName]
+		if config then
+			config.MaxEnemies = newMax
+		end
+	end)
+
+	remotes.KillAll.OnServerEvent:Connect(function(_)
+		print("Kill")
+		self:KillAllEnemies()
 	end)
 end
 

@@ -28,22 +28,11 @@ local SpawnAreaController = Knit.CreateController({
 
 local CONFIG_NAME = "Zombie"
 
--- Knit.GetService must be called outside any Vide reactive scope.
--- Vide tracks every function call made during reactive computations to detect
--- source dependencies; calling GetService inside create() callbacks can cause
--- it to be re-invoked unexpectedly on reactive updates. These helpers are
--- defined here, outside the Vide tree, so they are always safe to call.
-local function fireKillAll()
-	Knit.GetService("EnemyService").KillAll:Fire()
-end
-
-local function fireChangeInterval(v: number)
-	Knit.GetService("EnemyService").ChangeSpawnAreaInterval:Fire(CONFIG_NAME, v)
-end
-
-local function fireChangeMaxEnemies(v: number)
-	Knit.GetService("EnemyService").ChangeSpawnAreaMaxEnemies:Fire(CONFIG_NAME, v)
-end
+-- RemoteEvents are fetched once here so UI callbacks can fire them directly
+local remotes = ReplicatedStorage:WaitForChild("EnemyRemotes")
+local killAllRemote = remotes:WaitForChild("KillAll")
+local changeIntervalRemote = remotes:WaitForChild("ChangeSpawnAreaInterval")
+local changeMaxEnemiesRemote = remotes:WaitForChild("ChangeSpawnAreaMaxEnemies")
 
 -- ============================================================
 -- UI
@@ -142,9 +131,13 @@ local function SpawnAreaPanel()
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 
-			NumberRow("Interval (s)", config and config.SpawnInterval or 1, fireChangeInterval),
+			NumberRow("Interval (s)", config and config.SpawnInterval or 1, function(v)
+				changeIntervalRemote:FireServer(CONFIG_NAME, v)
+			end),
 
-			NumberRow("Max Enemies", config and config.MaxEnemies or 20, fireChangeMaxEnemies),
+			NumberRow("Max Enemies", config and config.MaxEnemies or 20, function(v)
+				changeMaxEnemiesRemote:FireServer(CONFIG_NAME, v)
+			end),
 
 			create("TextButton")({
 				Size = UDim2.new(1, 0, 0, 26),
@@ -155,7 +148,7 @@ local function SpawnAreaPanel()
 				TextSize = 13,
 				BorderSizePixel = 0,
 				Activated = function()
-					fireKillAll()
+					killAllRemote:FireServer()
 				end,
 				create("UICorner")({ CornerRadius = UDim.new(0, 4) }),
 			}),
