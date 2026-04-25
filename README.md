@@ -15,3 +15,11 @@ rojo serve
 ```
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).
+
+
+You dont need to run pesde or install it since i didnt add it to the .gitignore this time
+
+USED LIBRARIES:
+
+Knit;
+Vide

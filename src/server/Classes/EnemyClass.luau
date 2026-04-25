@@ -69,6 +69,8 @@ function Enemy:StartBehaviorLoop()
 	end
 
 	local lastAttack = 0
+	local lastWander = 0
+	local wanderDelay = math.random(3, 12)
 
 	task.spawn(function()
 		while self.Model and self.Model.Parent and humanoid and humanoid.Health > 0 do
@@ -82,6 +84,15 @@ function Enemy:StartBehaviorLoop()
 					if dist <= ATTACK_RANGE and tick() - lastAttack >= ATTACK_COOLDOWN then
 						lastAttack = tick()
 						self:Attack(target)
+					end
+				end
+			else
+				if tick() - lastWander >= wanderDelay then
+					lastWander = tick()
+					wanderDelay = math.random(3, 12)
+					local pos = self.SpawnArea:GetRandomPositionWithin()
+					if pos then
+						humanoid:MoveTo(pos)
 					end
 				end
 			end
