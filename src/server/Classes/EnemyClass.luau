@@ -9,6 +9,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Dependencies
 local EnemiesAssets: Folder = ReplicatedStorage.Assets.Enemies
+local Packages = ReplicatedStorage.Packages
+local Knit = require(Packages.knit)
 
 -- Definitions
 
@@ -34,11 +36,13 @@ function Enemy.new(params: { EnemyType: string, CFrame: CFrame, SpawnArea: {} })
 	local enemyModel = EnemiesAssets:FindFirstChild(enemyType):Clone()
 	enemyModel:PivotTo(params.CFrame + Vector3.new(0, enemyModel:GetExtentsSize().Y / 2, 0))
 	enemyModel.Parent = workspace.Ignore.Entities
-	return setmetatable({
+	local enemy = setmetatable({
 		Type = enemyType,
 		Model = enemyModel,
 		SpawnArea = params.SpawnArea,
 	}, Enemy)
+	Knit.GetService("EnemyService"):RegisterEnemy(enemy)
+	return enemy
 end
 
 return Enemy
