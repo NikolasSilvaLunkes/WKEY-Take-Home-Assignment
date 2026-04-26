@@ -71,6 +71,10 @@ function EnemyService:KnitInit()
 	local requestEnemies = Instance.new("RemoteEvent")
 	requestEnemies.Name = "RequestEnemies"
 	requestEnemies.Parent = folder
+
+	local printEnemyId = Instance.new("RemoteEvent")
+	printEnemyId.Name = "PrintEnemyId"
+	printEnemyId.Parent = folder
 end
 
 function EnemyService:KnitStart()
@@ -111,6 +115,10 @@ function EnemyService:KnitStart()
 
 	remotes.KillAll.OnServerEvent:Connect(function(_)
 		self:KillAllEnemies()
+	end)
+
+	remotes.PrintEnemyId.OnServerEvent:Connect(function(player, id)
+		print(`[Server] Player "{player.Name}" clicked enemy {id}`)
 	end)
 
 	-- Update loop: runs AI, sends target changes only, sweeps dead enemies
