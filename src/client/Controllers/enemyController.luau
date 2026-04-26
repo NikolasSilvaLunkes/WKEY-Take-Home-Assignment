@@ -10,6 +10,7 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.knit)
 
 local EnemiesAssets: Folder = ReplicatedStorage.Assets.Enemies
+local colorConfigs = require(ReplicatedStorage.Shared.colorConfigs)
 
 -- Definitions
 local EnemyController = Knit.CreateController({
@@ -22,8 +23,8 @@ local activeEnemies = {}
 function EnemyController:KnitStart()
 	local remotes = ReplicatedStorage:WaitForChild("EnemyRemotes")
 
-	-- Server spawned a new enemy: clone model and track it by id
-	remotes:WaitForChild("EnemySpawned").OnClientEvent:Connect(function(id, enemyType, footPos)
+	-- Server spawned a new enemy: clone model, apply color + scale, track by id
+	remotes:WaitForChild("EnemySpawned").OnClientEvent:Connect(function(id, enemyType, footPos, colorIndex, sizeScale)
 		if activeEnemies[id] then return end
 
 		local template = EnemiesAssets:FindFirstChild(enemyType)
@@ -33,6 +34,28 @@ function EnemyController:KnitStart()
 		end
 
 		local model = template:Clone()
+
+		-- Apply color config chosen by the server (same index = same colors on all clients)
+		local configs = colorConfigs[enemyType]
+		local config = configs and configs[colorIndex]
+		if config then
+			local function applyColor(partName, color)
+				local part = model:FindFirstChild(partName)
+				if part then
+					part.Color = color
+				end
+			end
+			applyColor("Head",      config.Skin)
+			applyColor("Left Arm",  config.Skin)
+			applyColor("Right Arm", config.Skin)
+			applyColor("Torso",     config.Shirt)
+			applyColor("Left Leg",  config.Pants)
+			applyColor("Right Leg", config.Pants)
+		end
+
+		-- Scale before measuring so heightOffset reflects final size
+		model:ScaleTo(sizeScale)
+
 		local heightOffset = model:GetExtentsSize().Y / 2
 		model:PivotTo(CFrame.new(footPos + Vector3.new(0, heightOffset, 0)))
 		model.Parent = workspace.Ignore.Entities
@@ -64,6 +87,10 @@ function EnemyController:KnitStart()
 			activeEnemies[id] = nil
 		end
 	end)
+
+	-- All listeners are connected — request the current enemy snapshot from the server.
+	-- Doing this last guarantees no EnemySpawned/EnemyTargets fires are missed.
+	remotes:WaitForChild("RequestEnemies"):FireServer()
 end
 
 return EnemyController

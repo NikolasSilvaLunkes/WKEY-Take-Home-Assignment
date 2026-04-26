@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.knit)
+local colorConfigs = require(ReplicatedStorage.Shared.colorConfigs)
 
 local Enemy = {}
 Enemy.__index = Enemy
@@ -115,12 +116,18 @@ function Enemy.new(params: { EnemyType: string, Position: Vector3, SpawnArea: {}
 		return nil
 	end
 
+	local configs = colorConfigs[enemyType]
+	local colorIndex = configs and math.random(1, #configs) or 1
+	local sizeScale = 0.85 + math.random() * 0.35 -- 0.85 – 1.20
+
 	local self = setmetatable({
 		Type = enemyType,
 		Position = params.Position,
 		TargetPosition = nil,
 		IsAlive = true,
 		SpawnArea = params.SpawnArea,
+		ColorIndex = colorIndex,
+		SizeScale = sizeScale,
 		_lastAttack = 0,
 		_lastWander = 0,
 		_wanderDelay = math.random(3, 12),

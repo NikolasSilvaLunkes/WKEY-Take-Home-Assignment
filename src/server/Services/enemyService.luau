@@ -5,7 +5,6 @@
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 -- Dependencies
@@ -25,7 +24,9 @@ function EnemyService:RegisterEnemy(enemyObject)
 	local id = HttpService:GenerateGUID(false)
 	enemyObject.Id = id
 	self.SpawnedEnemies[id] = enemyObject
-	ReplicatedStorage.EnemyRemotes.EnemySpawned:FireAllClients(id, enemyObject.Type, enemyObject.Position)
+	ReplicatedStorage.EnemyRemotes.EnemySpawned:FireAllClients(
+		id, enemyObject.Type, enemyObject.Position, enemyObject.ColorIndex, enemyObject.SizeScale
+	)
 end
 
 function EnemyService:KillAllEnemies()
@@ -65,6 +66,11 @@ function EnemyService:KnitInit()
 	local enemiesRemoved = Instance.new("RemoteEvent")
 	enemiesRemoved.Name = "EnemiesRemoved"
 	enemiesRemoved.Parent = folder
+
+	-- Client fires this once its listeners are all connected; server replies with current snapshot
+	local requestEnemies = Instance.new("RemoteEvent")
+	requestEnemies.Name = "RequestEnemies"
+	requestEnemies.Parent = folder
 end
 
 function EnemyService:KnitStart()
@@ -75,11 +81,12 @@ function EnemyService:KnitStart()
 
 	local remotes = ReplicatedStorage.EnemyRemotes
 
-	-- Send all currently alive enemies to late-joining players
-	Players.PlayerAdded:Connect(function(player)
+	-- Client explicitly requests a snapshot once all its listeners are wired up.
+	-- This avoids the race where FireAllClients fires before OnClientEvent is connected.
+	remotes.RequestEnemies.OnServerEvent:Connect(function(player)
 		for id, enemy in pairs(self.SpawnedEnemies) do
 			if enemy.IsAlive then
-				remotes.EnemySpawned:FireClient(player, id, enemy.Type, enemy.Position)
+				remotes.EnemySpawned:FireClient(player, id, enemy.Type, enemy.Position, enemy.ColorIndex, enemy.SizeScale)
 				if enemy.TargetPosition then
 					remotes.EnemyTargets:FireClient(player, { [id] = enemy.TargetPosition })
 				end
